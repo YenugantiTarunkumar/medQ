@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MEDQ Healthcare Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-notes-medical fa-xl" style="color:#2dd4bf;"></i>
+                <div class="sidebar-logo" data-i18n="appName">MedQ</div>
+            </div>
+
+            <ul class="sidebar-menu">
+                {% if current_user.is_authenticated %}
+                {% if current_user.role == 'PATIENT' %}
+                <li><a href="{{ url_for('patient_dashboard') }}"
+                        class="{% if request.endpoint == 'patient_dashboard' %}active{% endif %}"><i
+                            class="fa-solid fa-chart-line"></i> <span data-i18n="navDashboard">Dashboard</span></a></li>
+                <li><a href="{{ url_for('patient_profile') }}"
+                        class="{% if 'profile' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-id-card"></i> <span>My Profile</span></a></li>
+                <li><a href="{{ url_for('patient_hospitals') }}"
+                        class="{% if 'hospitals' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-hospital"></i> <span data-i18n="navHospitals">Find Hospitals</span></a>
+                </li>
+                <li><a href="{{ url_for('patient_appointments') }}"
+                        class="{% if 'appointments' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-calendar-check"></i> <span
+                            data-i18n="navAppointments">Appointments</span></a></li>
+                <li><a href="{{ url_for('patient_queue') }}"
+                        class="{% if 'queue' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-users-rectangle"></i> <span data-i18n="navQueue">Live Queue</span></a>
+                </li>
+                <li><a href="{{ url_for('patient_reports') }}"
+                        class="{% if 'reports' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-file-medical"></i> <span>Lab Reports</span></a></li>
+                <li><a href="{{ url_for('patient_triage') }}"
+                        class="{% if 'triage' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-stethoscope"></i> <span data-i18n="navTriage">AI Triage</span></a></li>
+                <li><a href="{{ url_for('patient_assistant') }}"
+                        class="{% if 'assistant' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-robot"></i> <span data-i18n="navAssistant">Health Assistant</span></a>
+                </li>
+                <li><a href="{{ url_for('patient_emergency') }}"
+                        class="{% if 'emergency' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-truck-medical"></i> <span data-i18n="navEmergency">Emergency</span></a>
+                </li>
+
+                {% elif current_user.role == 'DOCTOR' %}
+                <li><a href="{{ url_for('doctor_dashboard') }}"
+                        class="{% if request.endpoint == 'doctor_dashboard' %}active{% endif %}"><i
+                            class="fa-solid fa-user-doctor"></i> <span data-i18n="navDashboard">Doctor
+                            Dashboard</span></a></li>
+                <li><a href="{{ url_for('doctor_queue') }}"
+                        class="{% if 'queue' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-clipboard-user"></i> <span>Today's Queue</span></a></li>
+                <li><a href="{{ url_for('doctor_prescriptions') }}"
+                        class="{% if 'prescriptions' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-prescription-bottle-medical"></i> <span>Prescriptions</span></a></li>
+
+                {% elif current_user.role == 'HOSPITAL_ADMIN' %}
+                <li><a href="{{ url_for('hospital_dashboard') }}"
+                        class="{% if request.endpoint == 'hospital_dashboard' %}active{% endif %}"><i
+                            class="fa-solid fa-hospital-user"></i> <span data-i18n="navDashboard">Hospital
+                            Dashboard</span></a></li>
+                <li><a href="{{ url_for('hospital_beds') }}"
+                        class="{% if 'beds' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-bed"></i>
+                        <span data-i18n="navBeds">Beds & Rooms</span></a></li>
+                <li><a href="{{ url_for('hospital_inventory') }}"
+                        class="{% if 'inventory' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-boxes-stacked"></i> <span data-i18n="navInventory">Inventory &
+                            Forecast</span></a></li>
+                <li><a href="{{ url_for('hospital_analytics') }}"
+                        class="{% if 'analytics' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-chart-pie"></i> <span data-i18n="navAnalytics">Analytics</span></a></li>
+
+                {% elif current_user.role == 'SYSTEM_ADMIN' %}
+                <li><a href="{{ url_for('admin_dashboard') }}"
+                        class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}"><i
+                            class="fa-solid fa-sliders"></i> <span data-i18n="navDashboard">Admin Console</span></a>
+                </li>
+                <li><a href="{{ url_for('admin_users') }}"
+                        class="{% if 'users' in request.endpoint %}active{% endif %}"><i class="fa-solid fa-users"></i>
+                        <span data-i18n="navUsers">Manage Users</span></a></li>
+                <li><a href="{{ url_for('admin_hospitals') }}"
+                        class="{% if 'hospitals' in request.endpoint %}active{% endif %}"><i
+                            class="fa-solid fa-building-hospital"></i> <span
+                            data-i18n="navHospitals">Hospitals</span></a></li>
+                {% endif %}
+                {% else %}
+                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-house"></i> <span>Home</span></a></li>
+                <li><a href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> <span
+                            data-i18n="login">Login</span></a></li>
+                <li><a href="{{ url_for('register') }}"><i class="fa-solid fa-user-plus"></i> <span>Register</span></a>
+                </li>
+                {% endif %}
+            </ul>
+
+            {% if current_user.is_authenticated %}
+            <div style="padding:20px 12px; border-top: 1px solid #1e293b;">
+                <a href="{{ url_for('logout') }}"
+                    style="color:#ef4444; text-decoration:none; display:flex; align-items:center; gap:10px; font-weight:600;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span data-i18n="logout">Logout</span>
+                </a>
+            </div>
+            {% endif %}
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Topbar Header -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);"></i>
+                    <input type="text" placeholder="Search hospitals, doctors, departments..."
+                        data-i18n-ph="searchPlaceholder">
+                </div>
+
+                <div class="topbar-actions">
+                    <!-- Language Selector -->
+                    <select id="langSelect"
+                        style="padding:6px 12px; border-radius:8px; border:1px solid var(--border-color); background:white; font-size:13px; font-weight:600;">
+                        <option value="en">English</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                    </select>
+
+                    {% if current_user.is_authenticated %}
+                    <span class="role-badge">{{ current_user.role }}</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-user-circle fa-xl" style="color:var(--primary);"></i>
+                        <span style="font-weight:600; font-size:14px;">{{ current_user.name }}</span>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-medq btn-primary" data-i18n="login">Login</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Flash Alerts -->
+            <div style="padding: 16px 32px 0 32px;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="disclaimer-banner"
+                    style="background: {% if category=='error' %}#fef2f2; color:#ef4444; border-color:#fca5a5;{% else %}#f0fdf4; color:#15803d; border-color:#86efac;{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Content -->
+            <main class="content-area">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation Session - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">OPD Consultation Session</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Appointment Ref: <strong>{{ appointment.appointment_code
+        }}</strong> | Token: <strong style="color:var(--primary);">{{ appointment.token_number }}</strong></p>
+
+<!-- Patient Info Summary Card -->
+<div class="card-box" style="background:#f8fafc;">
+    <h3>Patient Profile</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-top:12px;">
+        <div><strong>Name:</strong> {{ appointment.patient.user.name }}</div>
+        <div><strong>Age / Gender:</strong> {{ appointment.patient.age }} Yrs / {{ appointment.patient.gender }}</div>
+        <div><strong>Blood Group:</strong> {{ appointment.patient.blood_group }}</div>
+        <div><strong>Urgency:</strong> <span
+                class="badge-status badge-{% if appointment.urgency_level=='RED' %}red{% elif appointment.urgency_level=='ORANGE' %}orange{% elif appointment.urgency_level=='YELLOW' %}yellow{% else %}green{% endif %}">Priority
+                {{ appointment.priority }} - {{ appointment.urgency_level }}</span></div>
+    </div>
+    <div style="margin-top:12px;">
+        <strong>Reported Symptoms:</strong> {{ appointment.symptoms or 'None reported' }}
+    </div>
+</div>
+
+<!-- Consultation & Prescription Form -->
+<div class="card-box">
+    <h2>Record Clinical Examination & Digital Prescription</h2>
+    <form action="{{ url_for('doctor_consultation', appointment_id=appointment.id) }}" method="POST"
+        style="margin-top:20px;">
+        <div class="form-group">
+            <label for="diagnosis_notes">Doctor Diagnosis & Clinical Notes</label>
+            <textarea name="diagnosis_notes" id="diagnosis_notes" rows="4" class="form-control"
+                placeholder="Enter clinical observations, examination findings, and diagnosis..." required></textarea>
+        </div>
+
+        <h3 style="margin:24px 0 12px 0;">Digital Prescription Builder</h3>
+        <div id="prescriptionRows">
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <input type="text" name="med_name[]" class="form-control"
+                    placeholder="Medicine Name (e.g. Paracetamol 650mg)" required>
+                <input type="text" name="med_dosage[]" class="form-control" placeholder="Dosage (e.g. 1 Tablet)"
+                    required>
+                <input type="text" name="med_freq[]" class="form-control" placeholder="Frequency (e.g. 2 times/day)"
+                    required>
+                <input type="text" name="med_duration[]" class="form-control" placeholder="Duration (e.g. 5 days)"
+                    required>
+            </div>
+        </div>
+        <button type="button" class="btn-medq btn-secondary" onclick="addMedRow()"
+            style="font-size:12px; margin-bottom:20px;"><i class="fa-solid fa-plus"></i> Add Another Medicine</button>
+
+        <div class="form-group">
+            <label for="instructions">Advice / Special Dietary & Recovery Instructions</label>
+            <textarea name="instructions" id="instructions" rows="2" class="form-control"
+                placeholder="e.g. Take medicines after food. Drink plenty of warm water. Rest for 3 days."></textarea>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:12px 28px; font-size:16px;">
+            <i class="fa-solid fa-check-circle"></i> Complete Consultation & Generate Prescription
+        </button>
+    </form>
+</div>
+
+<script>
+    function addMedRow() {
+        const container = document.getElementById('prescriptionRows');
+        const row = document.createElement('div');
+        row.style.cssText = "display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:12px; margin-bottom:12px;";
+        row.innerHTML = `
+        <input type="text" name="med_name[]" class="form-control" placeholder="Medicine Name" required>
+        <input type="text" name="med_dosage[]" class="form-control" placeholder="Dosage" required>
+        <input type="text" name="med_freq[]" class="form-control" placeholder="Frequency" required>
+        <input type="text" name="med_duration[]" class="form-control" placeholder="Duration" required>
+    `;
+        container.appendChild(row);
+    }
+</script>
+{% endblock %}

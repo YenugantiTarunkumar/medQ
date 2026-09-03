@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Lab Reports - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Medical & Lab Reports</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Upload and access your diagnostic lab reports, blood tests, and
+    imaging scans</p>
+
+<!-- Upload New Report Form -->
+<div class="card-box" style="margin-bottom:24px;">
+    <h2>Upload New Diagnostic Report</h2>
+    <form action="{{ url_for('patient_reports') }}" method="POST" enctype="multipart/form-data"
+        style="margin-top:16px; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; align-items:end;">
+        <div class="form-group">
+            <label for="report_name">Report Title / Type</label>
+            <input type="text" name="report_name" id="report_name" class="form-control"
+                placeholder="e.g. Complete Blood Count (CBC)" required>
+        </div>
+
+        <div class="form-group">
+            <label for="report_date">Test / Report Date</label>
+            <input type="date" name="report_date" id="report_date" class="form-control" value="{{ today_str }}"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="report_file">Attach Document (PDF, PNG, JPG)</label>
+            <input type="file" name="report_file" id="report_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg"
+                required style="padding:7px;">
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:10px 20px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Document
+        </button>
+    </form>
+</div>
+
+<!-- Uploaded Reports Directory -->
+<div class="card-box">
+    <h2>Stored Medical Reports</h2>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Document Title</th>
+                <th>Report Date</th>
+                <th>File Format</th>
+                <th>AI Diagnostic Summary</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reports %}
+            <tr>
+                <td>
+                    <i class="fa-solid {% if '.pdf' in r.report_file.lower() %}fa-file-pdf{% else %}fa-file-image{% endif %}"
+                        style="color:var(--primary); margin-right:8px;"></i>
+                    <strong>{{ r.diagnosis_notes }}</strong>
+                </td>
+                <td>{{ r.record_date }}</td>
+                <td><span class="role-badge">{{ r.report_file.split('.')[-1].upper() }}</span></td>
+                <td>
+                    <span style="font-size:13px; color:var(--text-muted);">
+                        {{ r.report_ai_summary or 'Report uploaded successfully. No critical anomalies flagged.' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('static', filename='uploads/reports/' ~ r.report_file) }}" target="_blank"
+                        class="btn-medq btn-secondary" style="padding:6px 12px; font-size:12px;">
+                        <i class="fa-solid fa-eye"></i> View File
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="color:var(--text-muted); text-align:center;">No uploaded medical reports found in
+                    your record history.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

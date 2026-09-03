@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Console - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Hospital Management Dashboard</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Hospital: <strong>{{ hospital.name }}</strong> ({{ hospital.city
+    }})</p>
+
+<!-- Overview Stats Grid -->
+<div class="grid-stats">
+    <div class="stat-card">
+        <div class="stat-title">Active OPD Queue</div>
+        <div class="stat-value" style="color:var(--primary);">{{ active_queue|length }} Patients</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">General Bed Occupancy</div>
+        <div class="stat-value">{{ hospital.general_beds_total - hospital.general_beds_avail }} / {{
+            hospital.general_beds_total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">ICU Beds Available</div>
+        <div class="stat-value" style="color:var(--accent);">{{ hospital.icu_beds_avail }} / {{ hospital.icu_beds_total
+            }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Low Stock Alerts</div>
+        <div class="stat-value" style="color:var(--status-red);">{{ low_stock_count }} Items</div>
+    </div>
+</div>
+
+<!-- Quick Navigation Links -->
+<div class="card-box">
+    <h3>Administrative Management Controls</h3>
+    <div style="display:flex; gap:16px; margin-top:16px; flex-wrap:wrap;">
+        <a href="{{ url_for('hospital_beds') }}" class="btn-medq btn-primary"><i class="fa-solid fa-bed"></i> Manage
+            Beds & Rooms</a>
+        <a href="{{ url_for('hospital_inventory') }}" class="btn-medq btn-secondary"><i
+                class="fa-solid fa-boxes-stacked"></i> Inventory & Demand Forecast</a>
+        <a href="{{ url_for('hospital_analytics') }}" class="btn-medq btn-secondary"><i
+                class="fa-solid fa-chart-pie"></i> View Analytics</a>
+    </div>
+</div>
+
+<!-- Active OPD Queue Monitor -->
+<div class="card-box">
+    <div class="card-header">
+        <h2>Live OPD Queue Stream</h2>
+    </div>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Token</th>
+                <th>Patient Name</th>
+                <th>Department</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Time Slot</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tok in active_queue %}
+            <tr>
+                <td><strong style="color:var(--primary); font-size:16px;">{{ tok.token_code }}</strong></td>
+                <td>{{ tok.appointment.patient.user.name }}</td>
+                <td>{{ tok.appointment.department }}</td>
+                <td>
+                    <span
+                        class="badge-status badge-{% if tok.priority>=5 %}red{% elif tok.priority==4 %}orange{% elif tok.priority==3 %}yellow{% else %}green{% endif %}">
+                        Priority {{ tok.priority }}
+                    </span>
+                </td>
+                <td><strong>{{ tok.status }}</strong></td>
+                <td>{{ tok.appointment.time_slot }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="color:var(--text-muted); text-align:center; padding:20px;">No active OPD queue
+                    tokens currently waiting.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}AI Symptom Triage - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">AI-Assisted Symptom Triage & Urgency Evaluation</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Intelligent risk assessment and department recommendation engine
+</p>
+
+<div class="disclaimer-banner">
+    <i class="fa-solid fa-triangle-exclamation"></i> <strong>Informational Medical Disclaimer:</strong> This AI Triage
+    module provides informational risk stratification and department recommendation based on configured rules and
+    trained Decision Tree models. It does NOT replace medical evaluation by a licensed physician. If you experience
+    crushing chest pain or severe breathing difficulty, seek emergency care immediately.
+</div>
+
+<div class="card-box">
+    <h2>Enter Medical Symptoms & Details</h2>
+    <form action="{{ url_for('patient_triage') }}" method="POST" style="margin-top:20px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
+            <div class="form-group">
+                <label for="age">Patient Age</label>
+                <input type="number" name="age" id="age" class="form-control"
+                    value="{{ current_user.patient_profile.age if current_user.patient_profile else 30 }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Healthcare Department Category</label>
+                <select name="category" id="category" class="form-control" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat.name }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="duration_days">Symptom Duration (Days)</label>
+                <input type="number" name="duration_days" id="duration_days" class="form-control" value="2" min="1"
+                    required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="symptoms">Select / Type Experienced Symptoms</label>
+            <textarea name="symptoms" id="symptoms" rows="3" class="form-control"
+                placeholder="e.g. Fever, Shortness of breath, Chest pain, Fatigue..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:12px 24px;">
+            <i class="fa-solid fa-microchip"></i> Run AI Triage Evaluation
+        </button>
+    </form>
+</div>
+
+<!-- Triage Result Modal Card -->
+{% if triage_result %}
+<div class="card-box"
+    style="border: 2px solid {% if triage_result.urgency_level=='RED' %}var(--status-red){% elif triage_result.urgency_level=='ORANGE' %}var(--status-orange){% elif triage_result.urgency_level=='YELLOW' %}var(--status-yellow){% else %}var(--status-green){% endif %};">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+        <div>
+            <span
+                class="badge-status badge-{% if triage_result.urgency_level=='RED' %}red{% elif triage_result.urgency_level=='ORANGE' %}orange{% elif triage_result.urgency_level=='YELLOW' %}yellow{% else %}green{% endif %}">
+                Urgency Level: {{ triage_result.urgency_level }}
+            </span>
+            <h2 style="font-size:32px; font-weight:800; margin:12px 0;">Assigned Priority Score: {{
+                triage_result.priority }} / 5</h2>
+            <p style="font-size:16px;">Recommended Department: <strong>{{ triage_result.recommended_department
+                    }}</strong></p>
+            <p style="color:var(--text-muted); font-size:14px; margin-top:6px;">{{ triage_result.rationale }}</p>
+        </div>
+
+        <div>
+            <a href="{{ url_for('patient_hospitals', dept=triage_result.recommended_department) }}"
+                class="btn-medq btn-primary" style="padding:12px 24px; font-size:16px;">
+                <i class="fa-solid fa-calendar-check"></i> Book Recommended Appointment
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

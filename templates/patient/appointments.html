@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Appointments & Consultations</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Schedule OPD consultation with priority queue placement and
+    doctor selection</p>
+
+<!-- Booking Form -->
+<div class="card-box">
+    <h2>Book New OPD Appointment</h2>
+    <form action="{{ url_for('patient_appointments') }}" method="POST" style="margin-top:20px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
+            <div class="form-group">
+                <label for="hospital_id">Select Hospital</label>
+                <select name="hospital_id" id="hospital_id" class="form-control" required>
+                    <option value="" disabled selected>Choose Hospital</option>
+                    {% for h in hospitals %}
+                    <option value="{{ h.id }}" {% if selected_hospital_id==h.id %}selected{% endif %}>{{ h.name }} ({{
+                        h.city }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department</label>
+                <select name="department" id="department" class="form-control" required>
+                    <option value="General Physician">General Physician</option>
+                    <option value="Heart">Heart (Cardiology)</option>
+                    <option value="Covid">Covid / Respiratory</option>
+                    <option value="Child Specialist">Child Specialist</option>
+                    <option value="Women Health">Women Health</option>
+                    <option value="Bones and Joints">Bones and Joints</option>
+                    <option value="Dental Care">Dental Care</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="doctor_id">Select Preferred Doctor</label>
+                <select name="doctor_id" id="doctor_id" class="form-control">
+                    <option value="">Any Available Specialist</option>
+                    {% for d in doctors %}
+                    <option value="{{ d.id }}">Dr. {{ d.user.name }} ({{ d.specialization }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="appointment_date">Appointment Date</label>
+                <input type="date" name="appointment_date" id="appointment_date" class="form-control"
+                    value="{{ today_str }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_slot">Preferred Time Slot</label>
+                <select name="time_slot" id="time_slot" class="form-control" required>
+                    <option value="09:30 AM">09:30 AM</option>
+                    <option value="10:30 AM" selected>10:30 AM</option>
+                    <option value="11:30 AM">11:30 AM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                    <option value="04:00 PM">04:00 PM</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="symptoms">Report Symptoms / Medical Concern</label>
+            <textarea name="symptoms" id="symptoms" rows="3" class="form-control"
+                placeholder="Describe symptoms (e.g. Fever, Cough, Chest Pain)..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:12px 24px;">
+            <i class="fa-solid fa-calendar-check"></i> Generate Digital Queue Token & Confirm Booking
+        </button>
+    </form>
+</div>
+
+<!-- Appointments History -->
+<div class="card-box">
+    <h2>All Appointment Records</h2>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Hospital</th>
+                <th>Department & Doctor</th>
+                <th>Date & Slot</th>
+                <th>Urgency / Priority</th>
+                <th>Token</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in appointments %}
+            <tr>
+                <td><strong>{{ app.appointment_code }}</strong></td>
+                <td>{{ app.hospital.name }}</td>
+                <td>
+                    <strong>{{ app.department }}</strong><br>
+                    <small style="color:var(--text-muted);">{% if app.doctor %}Dr. {{ app.doctor.user.name }}{% else
+                        %}Any Available Doctor{% endif %}</small>
+                </td>
+                <td>{{ app.appointment_date }} ({{ app.time_slot }})</td>
+                <td>
+                    <span
+                        class="badge-status badge-{% if app.urgency_level=='RED' %}red{% elif app.urgency_level=='ORANGE' %}orange{% elif app.urgency_level=='YELLOW' %}yellow{% else %}green{% endif %}">
+                        P{{ app.priority }} - {{ app.urgency_level }}
+                    </span>
+                </td>
+                <td><strong style="color:var(--primary);">{{ app.token_number or 'N/A' }}</strong></td>
+                <td><span
+                        class="badge-status badge-{% if app.status=='CONFIRMED' %}blue{% elif app.status=='COMPLETED' %}green{% elif app.status=='CANCELLED' %}red{% else %}yellow{% endif %}">{{
+                        app.status }}</span></td>
+                <td>
+                    {% if app.status in ['WAITING', 'CONFIRMED'] %}
+                    <form action="{{ url_for('patient_appointment_cancel', appointment_id=app.id) }}" method="POST"
+                        onsubmit="return confirm('Cancel this appointment?');" style="display:inline;">
+                        <button type="submit" class="btn-medq btn-secondary"
+                            style="padding:4px 8px; font-size:12px; color:#b91c1c; border-color:#fca5a5;">
+                            <i class="fa-solid fa-ban"></i> Cancel
+                        </button>
+                    </form>
+                    {% else %}
+                    <span style="font-size:12px; color:var(--text-muted);">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="color:var(--text-muted); text-align:center;">No appointments booked yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

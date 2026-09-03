@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Issued Prescriptions - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Issued Digital Prescriptions</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">History of digital prescriptions issued by Dr. {{
+    current_user.name }}</p>
+
+<div class="card-box">
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Prescription ID</th>
+                <th>Patient Name</th>
+                <th>Appointment Code</th>
+                <th>Issued Date</th>
+                <th>Instructions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in prescriptions %}
+            <tr>
+                <td>#RX-{{ p.id }}</td>
+                <td><strong>{{ p.patient.user.name }}</strong></td>
+                <td>{{ p.appointment.appointment_code }}</td>
+                <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ p.instructions or 'None' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="color:var(--text-muted); text-align:center;">No prescriptions issued yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

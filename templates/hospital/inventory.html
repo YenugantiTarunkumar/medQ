@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory & AI Forecast - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Pharmacy Inventory & AI Shortage Forecast</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Stock tracking, low-stock safety thresholds, and 7-day demand
+    predictions for {{ hospital.name }}</p>
+
+<!-- AI Predictive Shortage Alerts -->
+<div class="card-box" style="border:1px solid #bfdbfe; background:#eff6ff;">
+    <h3><i class="fa-solid fa-brain" style="color:var(--accent);"></i> AI 7-Day Demand & Shortage Predictions</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px;">
+        {% for pred in inventory_predictions %}
+        <div
+            style="background:white; padding:16px; border-radius:10px; border:1px solid {% if pred.risk_level=='HIGH' %}#fca5a5{% elif pred.risk_level=='MODERATE' %}#fde047{% else %}#bbf7d0{% endif %};">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>{{ pred.medicine_name }}</strong>
+                <span
+                    class="badge-status badge-{% if pred.risk_level=='HIGH' %}red{% elif pred.risk_level=='MODERATE' %}yellow{% else %}green{% endif %}">
+                    {{ pred.risk_level }} RISK
+                </span>
+            </div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:8px;">
+                Current Stock: <strong>{{ pred.current_quantity }}</strong> | Est 7-Day Demand: <strong>{{
+                    pred.projected_7day_demand }}</strong>
+            </div>
+            <p
+                style="font-size:12px; margin-top:6px; color:{% if pred.risk_level=='HIGH' %}#b91c1c{% else %}#15803d{% endif %};">
+                {{ pred.alert_message }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Stock Addition Form -->
+<div class="card-box">
+    <h2>Add / Stock-In Medicine Batch</h2>
+    <form action="{{ url_for('hospital_inventory') }}" method="POST" style="margin-top:16px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px;">
+            <div class="form-group">
+                <label for="name">Medicine Name</label>
+                <input type="text" name="name" id="name" class="form-control" placeholder="e.g. Paracetamol 650mg"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input type="text" name="category" id="category" class="form-control" placeholder="e.g. Analgesic"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="batch_no">Batch Number</label>
+                <input type="text" name="batch_no" id="batch_no" class="form-control" placeholder="PCM-2026-10"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" placeholder="100" min="1"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="min_stock">Safety Threshold</label>
+                <input type="number" name="min_stock" id="min_stock" class="form-control" placeholder="20" min="1"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="unit_price">Unit Price ($)</label>
+                <input type="number" step="0.01" name="unit_price" id="unit_price" class="form-control"
+                    placeholder="5.00" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:10px 20px;">
+            <i class="fa-solid fa-plus-circle"></i> Register Medicine Batch
+        </button>
+    </form>
+</div>
+
+<!-- Inventory Stock Table -->
+<div class="card-box">
+    <div
+        style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
+        <h2>Current Pharmacy Inventory</h2>
+        <!-- Client-side Filter Search Bar -->
+        <input type="text" id="inventorySearch" onkeyup="filterInventoryTable()"
+            placeholder="Search medicine name or batch..."
+            style="padding:8px 14px; border-radius:8px; border:1px solid var(--border-color); width:260px; font-size:14px;">
+    </div>
+
+    <table class="medq-table" id="inventoryTable">
+        <thead>
+            <tr>
+                <th>Batch No</th>
+                <th>Medicine Name</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Safety Threshold</th>
+                <th>Unit Price</th>
+                <th>Status</th>
+                <th>Stock Adjustment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in medicines %}
+            <tr>
+                <td><code>{{ med.batch_no }}</code></td>
+                <td><strong>{{ med.name }}</strong></td>
+                <td>{{ med.category }}</td>
+                <td><strong style="font-size:16px;">{{ med.quantity }}</strong></td>
+                <td>{{ med.min_stock }}</td>
+                <td>${{ "%.2f"|format(med.unit_price) }}</td>
+                <td>
+                    {% if med.quantity <= 0 %} <span class="badge-status badge-red">OUT OF STOCK</span>
+                        {% elif med.quantity <= med.min_stock %} <span class="badge-status badge-yellow">LOW
+                            STOCK</span>
+                            {% else %}
+                            <span class="badge-status badge-green">HEALTHY</span>
+                            {% endif %}
+                </td>
+                <td>
+                    <form action="{{ url_for('hospital_inventory_adjust', medicine_id=med.id) }}" method="POST"
+                        style="display:inline-flex; gap:6px;">
+                        <input type="number" name="change_qty"
+                            style="width:70px; padding:4px 8px; border-radius:6px; border:1px solid var(--border-color);"
+                            placeholder="+/- Qty" required>
+                        <button type="submit" class="btn-medq btn-secondary"
+                            style="padding:4px 8px; font-size:12px;">Adjust</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('hospital_inventory_delete', medicine_id=med.id) }}" method="POST"
+                        onsubmit="return confirm('Delete medicine from inventory?');" style="display:inline;">
+                        <button type="submit" class="btn-medq btn-secondary"
+                            style="padding:4px 8px; font-size:12px; color:#b91c1c; border-color:#fca5a5;">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="color:var(--text-muted); text-align:center;">No medicines recorded in pharmacy
+                    inventory.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function filterInventoryTable() {
+        let input = document.getElementById("inventorySearch");
+        let filter = input.value.toUpperCase();
+        let table = document.getElementById("inventoryTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) {
+            let tdName = tr[i].getElementsByTagName("td")[1];
+            let tdBatch = tr[i].getElementsByTagName("td")[0];
+            if (tdName || tdBatch) {
+                let txtValue = (tdName.textContent || tdName.innerText) + " " + (tdBatch.textContent || tdBatch.innerText);
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

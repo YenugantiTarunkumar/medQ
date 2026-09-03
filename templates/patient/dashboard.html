@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - MEDQ Healthcare{% endblock %}
+
+{% block content %}
+<div class="disclaimer-banner">
+    <i class="fa-solid fa-circle-info"></i> <strong>Medical Safety Disclaimer:</strong> MEDQ provides intelligent
+    healthcare assistance and queue tracking. It does not provide autonomous medical diagnosis. In an emergency, please
+    contact local emergency services immediately.
+</div>
+
+<h1 style="margin-bottom:20px; font-size:24px; font-weight:800;">Welcome back, {{ current_user.name }}</h1>
+
+<!-- Live Queue Token Highlight Card -->
+{% if active_appointment and active_appointment.queue_token %}
+<div class="card-box" style="background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%); color:white;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+        <div>
+            <span
+                style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700;">ACTIVE
+                QUEUE TOKEN</span>
+            <h2 style="font-size:42px; font-weight:800; margin:10px 0;">Token: {{
+                active_appointment.queue_token.token_code }}</h2>
+            <p style="font-size:15px; opacity:0.9;"><i class="fa-solid fa-hospital"></i> {{
+                active_appointment.hospital.name }} | {{ active_appointment.department }}</p>
+        </div>
+        <div style="text-align:right; background:rgba(255,255,255,0.15); padding:20px 28px; border-radius:16px;">
+            <div style="font-size:13px; opacity:0.9;">ESTIMATED WAITING TIME</div>
+            <div style="font-size:32px; font-weight:800; margin:4px 0;">~{{ estimated_wait_min }} Mins</div>
+            <div style="font-size:13px; opacity:0.9;">Patients Ahead: <strong>{{ patients_ahead }}</strong></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats Summary Grid -->
+<div class="grid-stats">
+    <div class="stat-card">
+        <div class="stat-title">Upcoming Appointments</div>
+        <div class="stat-value">{{ upcoming_appointments|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Medical Records</div>
+        <div class="stat-value">{{ medical_records|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Prescriptions</div>
+        <div class="stat-value">{{ medical_records|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Unread Alerts</div>
+        <div class="stat-value">{{ notifications|length }}</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card-box">
+    <h3>Quick Actions</h3>
+    <div style="display:flex; gap:16px; margin-top:16px; flex-wrap:wrap;">
+        <a href="{{ url_for('patient_hospitals') }}" class="btn-medq btn-primary"><i class="fa-solid fa-hospital"></i>
+            Find Hospital</a>
+        <a href="{{ url_for('patient_triage') }}" class="btn-medq btn-secondary"><i class="fa-solid fa-stethoscope"></i>
+            AI Symptom Triage</a>
+        <a href="{{ url_for('patient_queue') }}" class="btn-medq btn-secondary"><i
+                class="fa-solid fa-users-rectangle"></i> Live Queue Tracker</a>
+        <a href="{{ url_for('patient_emergency') }}" class="btn-medq btn-danger"><i
+                class="fa-solid fa-truck-medical"></i> Emergency Beds</a>
+    </div>
+</div>
+
+<!-- Upcoming Appointments Table -->
+<div class="card-box">
+    <div class="card-header">
+        <h2>My Scheduled Appointments</h2>
+        <a href="{{ url_for('patient_appointments') }}" class="btn-medq btn-secondary" style="font-size:12px;">View
+            All</a>
+    </div>
+
+    {% if upcoming_appointments %}
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Appointment ID</th>
+                <th>Hospital</th>
+                <th>Department</th>
+                <th>Date & Time</th>
+                <th>Priority / Urgency</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in upcoming_appointments %}
+            <tr>
+                <td><strong>{{ app.appointment_code }}</strong></td>
+                <td>{{ app.hospital.name }}</td>
+                <td>{{ app.department }}</td>
+                <td>{{ app.appointment_date }} ({{ app.time_slot }})</td>
+                <td>
+                    <span
+                        class="badge-status badge-{% if app.urgency_level=='RED' %}red{% elif app.urgency_level=='ORANGE' %}orange{% elif app.urgency_level=='YELLOW' %}yellow{% else %}green{% endif %}">
+                        P{{ app.priority }} - {{ app.urgency_level }}
+                    </span>
+                </td>
+                <td><span style="font-weight:700;">{{ app.status }}</span></td>
+                <td>
+                    <a href="{{ url_for('patient_queue') }}" class="btn-medq btn-primary"
+                        style="padding:4px 10px; font-size:12px;">Track Queue</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-muted); font-size:14px;">No upcoming appointments found. Use 'Find Hospital' or 'AI
+        Triage' to schedule an appointment.</p>
+    {% endif %}
+</div>
+{% endblock %}

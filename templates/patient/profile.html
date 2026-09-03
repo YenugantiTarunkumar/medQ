@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Profile - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">My Health Profile</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">View and update your personal health credentials and medical
+    history</p>
+
+<div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px;">
+    <!-- Profile Card Summary -->
+    <div class="card-box" style="text-align:center;">
+        <div
+            style="width:90px; height:90px; background:#eff6ff; color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto; font-size:36px; border:3px solid var(--primary);">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <h2 style="margin-bottom:4px;">{{ current_user.name }}</h2>
+        <span class="role-badge" style="margin-bottom:12px;">PATIENT</span>
+        <div
+            style="text-align:left; font-size:14px; color:var(--text-muted); display:flex; flex-direction:column; gap:8px; margin-top:16px;">
+            <div><i class="fa-solid fa-envelope" style="width:20px; color:var(--primary);"></i> {{ current_user.email }}
+            </div>
+            <div><i class="fa-solid fa-phone" style="width:20px; color:var(--primary);"></i> {{ current_user.phone or
+                'Not specified' }}</div>
+            <div><i class="fa-solid fa-droplet" style="width:20px; color:var(--primary);"></i> Blood Group: <strong>{{
+                    patient.blood_group }}</strong></div>
+            <div><i class="fa-solid fa-cake-candles" style="width:20px; color:var(--primary);"></i> Age: <strong>{{
+                    patient.age }} Years</strong></div>
+            <div><i class="fa-solid fa-venus-mars" style="width:20px; color:var(--primary);"></i> Gender: <strong>{{
+                    patient.gender }}</strong></div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="card-box">
+        <h2>Edit Medical & Contact Information</h2>
+        <form action="{{ url_for('patient_profile') }}" method="POST" style="margin-top:20px; display:grid; gap:16px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" name="name" id="name" class="form-control" value="{{ current_user.name }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" name="phone" id="phone" class="form-control"
+                        value="{{ current_user.phone or '' }}" placeholder="+1 555-0199" required>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label for="age">Age (Years)</label>
+                    <input type="number" name="age" id="age" class="form-control" value="{{ patient.age }}" min="1"
+                        max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select name="gender" id="gender" class="form-control" required>
+                        <option value="Male" {% if patient.gender=='Male' %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if patient.gender=='Female' %}selected{% endif %}>Female</option>
+                        <option value="Other" {% if patient.gender=='Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="blood_group">Blood Group</label>
+                    <select name="blood_group" id="blood_group" class="form-control" required>
+                        {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                        <option value="{{ bg }}" {% if patient.blood_group==bg %}selected{% endif %}>{{ bg }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="medical_history">Pre-Existing Medical Conditions / Allergies</label>
+                <textarea name="medical_history" id="medical_history" class="form-control" rows="4"
+                    placeholder="e.g. Asthma, Hypertension, Penicillin allergy...">{{ patient.medical_history or '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn-medq btn-primary" style="padding:12px 24px; justify-self:start;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

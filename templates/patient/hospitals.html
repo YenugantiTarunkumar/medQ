@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Find Hospitals - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Hospital Discovery & Real-Time Bed Finder</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Search verified hospitals by location, specialty, rating, and
+    real-time bed availability.</p>
+
+<!-- Filters Form -->
+<div class="card-box" style="padding:20px;">
+    <form action="{{ url_for('patient_hospitals') }}" method="GET"
+        style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; align-items:end;">
+        <div class="form-group" style="margin:0;">
+            <label for="q">Hospital Name / City</label>
+            <input type="text" name="q" id="q" class="form-control" placeholder="Search City Care, Apex..."
+                value="{{ request.args.get('q', '') }}">
+        </div>
+
+        <div class="form-group" style="margin:0;">
+            <label for="dept">Department</label>
+            <select name="dept" id="dept" class="form-control">
+                <option value="">All Departments</option>
+                <option value="General Physician" {% if request.args.get('dept')=='General Physician' %}selected{% endif
+                    %}>General Physician</option>
+                <option value="Heart" {% if request.args.get('dept')=='Heart' %}selected{% endif %}>Heart (Cardiology)
+                </option>
+                <option value="Covid" {% if request.args.get('dept')=='Covid' %}selected{% endif %}>Covid / Respiratory
+                </option>
+                <option value="Child Specialist" {% if request.args.get('dept')=='Child Specialist' %}selected{% endif
+                    %}>Child Specialist</option>
+                <option value="Women Health" {% if request.args.get('dept')=='Women Health' %}selected{% endif %}>Women
+                    Health</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin:0;">
+            <label for="bed_type">Bed Requirement</label>
+            <select name="bed_type" id="bed_type" class="form-control">
+                <option value="">Any Available Bed</option>
+                <option value="general" {% if request.args.get('bed_type')=='general' %}selected{% endif %}>General Bed
+                </option>
+                <option value="icu" {% if request.args.get('bed_type')=='icu' %}selected{% endif %}>ICU Bed</option>
+                <option value="emergency" {% if request.args.get('bed_type')=='emergency' %}selected{% endif %}>
+                    Emergency Bed</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="btn-medq btn-primary" style="width:100%;">
+                <i class="fa-solid fa-filter"></i> Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Hospital Cards Grid -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px;">
+    {% for h in hospitals %}
+    <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between; margin:0;">
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
+                <div>
+                    <h3 style="font-size:18px; font-weight:700;">{{ h.name }}</h3>
+                    <p style="color:var(--text-muted); font-size:13px; margin-top:4px;"><i
+                            class="fa-solid fa-location-dot" style="color:var(--primary);"></i> {{ h.address }}</p>
+                </div>
+                <span
+                    style="background:#fef3c7; color:#b45309; font-weight:700; padding:4px 8px; border-radius:8px; font-size:12px; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fa-solid fa-star"></i> {{ h.rating }}
+                </span>
+            </div>
+
+            <!-- Real-Time Bed Badges -->
+            <div
+                style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; background:#f8fafc; padding:12px; border-radius:8px;">
+                <div>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:600; display:block;">GENERAL
+                        BEDS</span>
+                    <strong
+                        style="color:{% if h.general_beds_avail > 0 %}var(--primary){% else %}var(--status-red){% endif %}; font-size:15px;">
+                        {{ h.general_beds_avail }} / {{ h.general_beds_total }} Free
+                    </strong>
+                </div>
+                <div>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:600; display:block;">ICU
+                        BEDS</span>
+                    <strong
+                        style="color:{% if h.icu_beds_avail > 0 %}var(--accent){% else %}var(--status-red){% endif %}; font-size:15px;">
+                        {{ h.icu_beds_avail }} / {{ h.icu_beds_total }} Free
+                    </strong>
+                </div>
+                <div>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:600; display:block;">EMERGENCY
+                        BEDS</span>
+                    <strong style="color:var(--status-orange); font-size:15px;">
+                        {{ h.emergency_beds_avail }} / {{ h.emergency_beds_total }} Free
+                    </strong>
+                </div>
+                <div>
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:600; display:block;">PRIVATE
+                        ROOMS</span>
+                    <strong style="font-size:15px;">
+                        {{ h.private_rooms_avail }} / {{ h.private_rooms_total }} Free
+                    </strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px;">
+            <a href="{{ url_for('patient_hospital_detail', hospital_id=h.id) }}" class="btn-medq btn-secondary"
+                style="flex:1;"><i class="fa-solid fa-circle-info"></i> View Details</a>
+            <a href="{{ url_for('patient_appointments', hospital_id=h.id) }}" class="btn-medq btn-primary"
+                style="flex:1;"><i class="fa-solid fa-calendar-plus"></i> Book Now</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

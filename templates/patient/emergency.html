@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Assistance - MEDQ Platform{% endblock %}
+
+{% block content %}
+<div class="disclaimer-banner" style="background:#fef2f2; color:#b91c1c; border-color:#fca5a5;">
+    <i class="fa-solid fa-triangle-exclamation fa-lg"></i> <strong>CRITICAL EMERGENCY NOTICE:</strong> For immediate
+    life-threatening medical emergencies, please call local ambulance/emergency dispatch Services immediately. MEDQ
+    provides real-time emergency bed locator and hospital directions.
+</div>
+
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800; color:var(--status-red);">Emergency Bed Finder & Hospital
+    Locator</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Locate nearest hospital facilities with immediate emergency and
+    ICU bed availability</p>
+
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px;">
+    {% for h in emergency_hospitals %}
+    <div class="card-box" style="border-left: 6px solid var(--status-red);">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+            <div>
+                <h3 style="font-size:20px; font-weight:800;">{{ h.name }}</h3>
+                <p style="color:var(--text-muted); font-size:14px; margin-top:4px;"><i class="fa-solid fa-location-dot"
+                        style="color:var(--status-red);"></i> {{ h.address }}</p>
+                <p style="color:var(--text-muted); font-size:14px; margin-top:4px;"><i class="fa-solid fa-phone"
+                        style="color:var(--status-red);"></i> Emergency Hotline: <strong>{{ h.contact_phone }}</strong>
+                </p>
+            </div>
+            <span class="badge-status badge-red">EMERGENCY ACTIVE</span>
+        </div>
+
+        <div
+            style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; background:#fef2f2; padding:16px; border-radius:12px; border:1px solid #fca5a5;">
+            <div>
+                <span style="font-size:12px; color:#991b1b; font-weight:700;">EMERGENCY BEDS AVAILABLE</span>
+                <div style="font-size:24px; font-weight:800; color:#b91c1c;">{{ h.emergency_beds_avail }} Free</div>
+            </div>
+            <div>
+                <span style="font-size:12px; color:#991b1b; font-weight:700;">ICU BEDS AVAILABLE</span>
+                <div style="font-size:24px; font-weight:800; color:#b91c1c;">{{ h.icu_beds_avail }} Free</div>
+            </div>
+        </div>
+
+        <div style="margin-top:16px; display:flex; gap:12px;">
+            <a href="tel:{{ h.contact_phone }}" class="btn-medq btn-danger" style="flex:1;"><i
+                    class="fa-solid fa-phone"></i> Call Emergency</a>
+            <a href="{{ url_for('patient_appointments', hospital_id=h.id) }}" class="btn-medq btn-primary"
+                style="flex:1;"><i class="fa-solid fa-calendar-plus"></i> Express Registration</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

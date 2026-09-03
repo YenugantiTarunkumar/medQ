@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hospital.name }} - Details & Booking{% endblock %}
+
+{% block content %}
+<div class="card-box">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:20px;">
+        <div>
+            <h1 style="font-size:28px; font-weight:800;">{{ hospital.name }}</h1>
+            <p style="color:var(--text-muted); font-size:15px; margin-top:6px;"><i class="fa-solid fa-location-dot"
+                    style="color:var(--primary);"></i> {{ hospital.address }}, {{ hospital.city }}</p>
+            <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+                <i class="fa-solid fa-phone" style="color:var(--primary);"></i> {{ hospital.contact_phone or '+1
+                800-555-MEDQ' }} |
+                <i class="fa-solid fa-envelope" style="color:var(--primary);"></i> {{ hospital.contact_email or
+                'info@hospital.com' }}
+            </p>
+            <div style="margin-top:12px; display:flex; gap:10px;">
+                <span class="badge-status badge-green"><i class="fa-solid fa-star"></i> {{ hospital.rating }}
+                    Rating</span>
+                <span class="badge-status badge-blue"><i class="fa-solid fa-clock"></i> 24/7 Emergency & OPD</span>
+                <span class="badge-status badge-yellow"><i class="fa-solid fa-dollar-sign"></i> ~$50 Consultation
+                    Fee</span>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <a href="{{ url_for('patient_appointments', hospital_id=hospital.id) }}" class="btn-medq btn-primary"
+                style="padding:12px 24px; font-size:16px;">
+                <i class="fa-solid fa-calendar-plus"></i> Book Appointment Now
+            </a>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ hospital.name|urlencode }}+{{ hospital.address|urlencode }}"
+                target="_blank" class="btn-medq btn-secondary" style="padding:10px 20px; text-align:center;">
+                <i class="fa-solid fa-map-location-dot"></i> Get Directions & Map
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Bed & Resource Availability Section -->
+<div class="card-box">
+    <h3>Real-Time Bed & Room Availability</h3>
+    <div class="grid-stats" style="margin-top:16px;">
+        <div class="stat-card">
+            <div class="stat-title">GENERAL BEDS</div>
+            <div class="stat-value" style="color:var(--primary);">{{ hospital.general_beds_avail }} / {{
+                hospital.general_beds_total }} Free</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">ICU BEDS</div>
+            <div class="stat-value" style="color:var(--accent);">{{ hospital.icu_beds_avail }} / {{
+                hospital.icu_beds_total }} Free</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">EMERGENCY BEDS</div>
+            <div class="stat-value" style="color:var(--status-orange);">{{ hospital.emergency_beds_avail }} / {{
+                hospital.emergency_beds_total }} Free</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">PRIVATE ROOMS</div>
+            <div class="stat-value">{{ hospital.private_rooms_avail }} / {{ hospital.private_rooms_total }} Free</div>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Roster -->
+<div class="card-box">
+    <h3>Available Specialist Doctors</h3>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>Doctor Name</th>
+                <th>Department</th>
+                <th>Specialization</th>
+                <th>Experience</th>
+                <th>Avg Consult Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in hospital.doctors %}
+            <tr>
+                <td><strong>Dr. {{ doc.user.name }}</strong></td>
+                <td>{{ doc.department }}</td>
+                <td>{{ doc.specialization }}</td>
+                <td>{{ doc.experience_years }} Years</td>
+                <td>~{{ doc.avg_consultation_time_min }} Mins</td>
+                <td>
+                    <a href="{{ url_for('patient_appointments', hospital_id=hospital.id, doctor_id=doc.id) }}"
+                        class="btn-medq btn-primary" style="padding:4px 10px; font-size:12px;">Book Consultation</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="color:var(--text-muted); text-align:center;">No doctor profiles configured for
+                    this hospital.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

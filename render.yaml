@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: medq-healthcare
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python seed_data.py
+    startCommand: python app.py
+    envVars:
+      - key: SECRET_KEY
+        value: medq_secret_key_2026_prod
+      - key: FIREBASE_API_KEY
+        value: AIzaSyA8u_kPdUFmJ5CzItynAkWuMjtHk1ntflg
+      - key: FIREBASE_PROJECT_ID
+        value: medq-5346f

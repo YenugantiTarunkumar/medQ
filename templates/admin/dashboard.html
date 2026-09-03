@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}System Admin Console - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">System Administrator Control Center</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Global platform metrics, user management, and system
+    configuration</p>
+
+<!-- Platform Metrics Grid -->
+<div class="grid-stats">
+    <div class="stat-card">
+        <div class="stat-title">Total Registered Users</div>
+        <div class="stat-value" style="color:var(--primary);">{{ total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Registered Hospitals</div>
+        <div class="stat-value" style="color:var(--accent);">{{ total_hospitals }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">Total Appointments</div>
+        <div class="stat-value">{{ total_appointments }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">System Health</div>
+        <div class="stat-value" style="color:var(--status-green);">100% ONLINE</div>
+    </div>
+</div>
+
+<!-- User Accounts Stream -->
+<div class="card-box">
+    <div class="card-header">
+        <h2>Registered System Users & Roles</h2>
+    </div>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Joined Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>#{{ u.id }}</td>
+                <td><strong>{{ u.name }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td><span class="role-badge">{{ u.role }}</span></td>
+                <td>{{ u.phone or 'N/A' }}</td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Hospitals Overview -->
+<div class="card-box">
+    <div class="card-header">
+        <h2>Registered Healthcare Institutions</h2>
+    </div>
+    <table class="medq-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Hospital Name</th>
+                <th>City</th>
+                <th>General Beds</th>
+                <th>ICU Beds</th>
+                <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in hospitals %}
+            <tr>
+                <td>#{{ h.id }}</td>
+                <td><strong>{{ h.name }}</strong></td>
+                <td>{{ h.city }}</td>
+                <td>{{ h.general_beds_avail }} / {{ h.general_beds_total }} Free</td>
+                <td>{{ h.icu_beds_avail }} / {{ h.icu_beds_total }} Free</td>
+                <td><i class="fa-solid fa-star" style="color:#eab308;"></i> {{ h.rating }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

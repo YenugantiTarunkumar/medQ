@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health Assistant - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">AI Healthcare Information Assistant</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Interactive medical FAQ, department guide, and MEDQ platform
+    navigator</p>
+
+<div class="disclaimer-banner">
+    <i class="fa-solid fa-robot"></i> <strong>Informational Safety Notice:</strong> MEDQ Assistant answers medical
+    terminology FAQs and helps navigate platform services. It does NOT prescribe medication or provide binding
+    diagnosis.
+</div>
+
+<div class="card-box" style="display:flex; flex-direction:column; height:500px; padding:0; overflow:hidden;">
+    <div style="background:#f8fafc; padding:16px 24px; border-bottom:1px solid var(--border-color); font-weight:700;">
+        <i class="fa-solid fa-comments" style="color:var(--primary);"></i> Chat with MEDQ Health Bot
+    </div>
+
+    <div id="chatHistory"
+        style="flex-grow:1; padding:24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;">
+        <div
+            style="background:#e0f2fe; color:#0369a1; padding:14px 18px; border-radius:12px; max-width:80%; align-self:flex-start;">
+            Hello {{ current_user.name }}! I am your MEDQ Assistant. You can ask me about hospital departments, queue
+            processes, symptom guidance, or general health FAQs. How can I help you today?
+        </div>
+    </div>
+
+    <div style="padding:16px 24px; border-top:1px solid var(--border-color); background:white; display:flex; gap:12px;">
+        <input type="text" id="userInput" class="form-control"
+            placeholder="Ask a question (e.g. Which department handles chest pain? What is OPD?)..."
+            onkeypress="if(event.key==='Enter') sendAssistantQuery()">
+        <button type="button" class="btn-medq btn-primary" onclick="sendAssistantQuery()"><i
+                class="fa-solid fa-paper-plane"></i> Send</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function sendAssistantQuery() {
+        const input = document.getElementById('userInput');
+        const query = input.value.trim();
+        if (!query) return;
+
+        const chatHistory = document.getElementById('chatHistory');
+
+        // Append User Message
+        const userBubble = document.createElement('div');
+        userBubble.style.cssText = "background:#0d9488; color:white; padding:14px 18px; border-radius:12px; max-width:80%; align-self:flex-end; font-weight:500;";
+        userBubble.innerText = query;
+        chatHistory.appendChild(userBubble);
+
+        input.value = '';
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        // Fetch AI Response
+        fetch('/api/assistant/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: query })
+        })
+            .then(res => res.json())
+            .then(data => {
+                const botBubble = document.createElement('div');
+                botBubble.style.cssText = "background:#e0f2fe; color:#0369a1; padding:14px 18px; border-radius:12px; max-width:80%; align-self:flex-start; line-height:1.5;";
+                botBubble.innerText = data.reply || "I am here to help you navigate MEDQ and understand healthcare categories.";
+                chatHistory.appendChild(botBubble);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }
+</script>
+{% endblock %}

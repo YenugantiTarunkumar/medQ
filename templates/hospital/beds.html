@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Beds & Room Management - MEDQ Platform{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:8px; font-size:24px; font-weight:800;">Hospital Bed & Room Capacity Management</h1>
+<p style="color:var(--text-muted); margin-bottom:24px;">Update live bed inventory, occupied capacity, and emergency bed
+    counts for {{ hospital.name }}</p>
+
+<!-- Live Bed Allocation Update Form -->
+<div class="card-box">
+    <h2>Update Live Bed Allocations</h2>
+    <form action="{{ url_for('hospital_beds') }}" method="POST" style="margin-top:20px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px;">
+            <div class="form-group">
+                <label for="general_avail">General Beds Available</label>
+                <input type="number" name="general_avail" id="general_avail" class="form-control"
+                    value="{{ hospital.general_beds_avail }}" min="0" max="{{ hospital.general_beds_total }}" required>
+                <span style="font-size:12px; color:var(--text-muted);">Total Capacity: {{ hospital.general_beds_total
+                    }}</span>
+            </div>
+
+            <div class="form-group">
+                <label for="icu_avail">ICU Beds Available</label>
+                <input type="number" name="icu_avail" id="icu_avail" class="form-control"
+                    value="{{ hospital.icu_beds_avail }}" min="0" max="{{ hospital.icu_beds_total }}" required>
+                <span style="font-size:12px; color:var(--text-muted);">Total Capacity: {{ hospital.icu_beds_total
+                    }}</span>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency_avail">Emergency Beds Available</label>
+                <input type="number" name="emergency_avail" id="emergency_avail" class="form-control"
+                    value="{{ hospital.emergency_beds_avail }}" min="0" max="{{ hospital.emergency_beds_total }}"
+                    required>
+                <span style="font-size:12px; color:var(--text-muted);">Total Capacity: {{ hospital.emergency_beds_total
+                    }}</span>
+            </div>
+
+            <div class="form-group">
+                <label for="private_avail">Private Rooms Available</label>
+                <input type="number" name="private_avail" id="private_avail" class="form-control"
+                    value="{{ hospital.private_rooms_avail }}" min="0" max="{{ hospital.private_rooms_total }}"
+                    required>
+                <span style="font-size:12px; color:var(--text-muted);">Total Capacity: {{ hospital.private_rooms_total
+                    }}</span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="padding:12px 24px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Bed Capacity Updates
+        </button>
+    </form>
+</div>
+
+<!-- Occupancy Stats Visual Cards -->
+<div class="grid-stats">
+    <div class="stat-card">
+        <div class="stat-title">GENERAL BEDS OCCUPANCY</div>
+        <div class="stat-value">{{ ((hospital.general_beds_total - hospital.general_beds_avail) /
+            hospital.general_beds_total * 100)|round(1) }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">ICU OCCUPANCY RATE</div>
+        <div class="stat-value" style="color:var(--accent);">{{ ((hospital.icu_beds_total - hospital.icu_beds_avail) /
+            hospital.icu_beds_total * 100)|round(1) }}%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-title">EMERGENCY UTILIZATION</div>
+        <div class="stat-value" style="color:var(--status-orange);">{{ ((hospital.emergency_beds_total -
+            hospital.emergency_beds_avail) / hospital.emergency_beds_total * 100)|round(1) }}%</div>
+    </div>
+</div>
+{% endblock %}

@@ -1,190 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Staff Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            
-        }
+{% extends "base.html" %}
 
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;    
-            width: 100%;
-            height: 100%;
-            background:  url_for('static', filename='images/newbg.jpg')  no-repeat center center fixed;
-            background-size: cover;
-            filter: blur(4px);
-            -webkit-filter: blur(4px); 
-            z-index: -1; 
-        }
-        .nav {
-            padding: 10px;
-            padding-right: 50px;
-            height: 5vh;
-            display: flex;
-            background-color: #0061F2;
-            justify-content: right;
-            align-items: center;
-        }
-        .logo {
-            position: absolute;
-            left: 108px;
-            font-size: 30px;
-            color: white;
-            font-family: sans-serif;
-            font-weight: bolder;
-        }
-        .nav ul {
-            display: flex;
-            align-items: center;
-            gap: 50px;
-            list-style-type: none;
-            font-size: 20px;
-            color: white;
-            font-family: sans-serif;
-            cursor: pointer;
-        }
-        li {
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-        }
-        li::after {
-            content: ''; 
-            position: absolute;
-            width: 100%;
-            height: 2px; 
-            background-color: currentColor; 
-            bottom: 0; 
-            left: 0;
-            transform: scaleX(0); 
-            transform-origin: bottom right; 
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
-        }
-        li:hover::after {
-            transform: scaleX(1); 
-            transform-origin: bottom left;
-        }
+{% block title %}Sign In - MEDQ Healthcare Platform{% endblock %}
 
-        .login-container {
-            background-color: rgba(255, 255, 255, 0.9); 
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); 
-            width: 300px;
-            text-align: center;
-            position: relative;
-            z-index: 1; 
-        }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 5px;
-            text-align: left;
-        }
-
-        input, select {
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 48%;
-        }
-
-        .signin-btn {
-            background-color: #009dcd;
-            color: white;
-        }
-
-        .signin-btn:hover {
-            background-color: black;
-            color: white;
-
-            
-        }
-
-        .register-btn {
-            background-color: #1cba00;
-            color: white;
-        }
-
-        .register-btn:hover {
-            background-color: #b53900;
-        }
-        .m1{
-            width: 100%;
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="nav">
-        <div class="logo">MedQ</div>
-        <ul>
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('dashboard') }}">Dispensary</a></li>
-            <li><a href="#">Patient details</a></li>
-            <li><a href="#">Records</a></li>
-            <li><a href="#">About us</a></li>
-            <li><a href="#">Help</a></li>
-        </ul>
+{% block content %}
+<div style="max-width:440px; margin:40px auto;" class="card-box">
+    <div style="text-align:center; margin-bottom:24px;">
+        <i class="fa-solid fa-notes-medical fa-3x" style="color:var(--primary);"></i>
+        <h2 style="margin-top:12px;">Sign In to MedQ</h2>
+        <p style="color:var(--text-muted); font-size:14px;">Access your role-based healthcare portal</p>
     </div>
-    <div class="m1">
-        <div class="login-container">
-            <h2>Hospital Staff Login</h2>
-            <form action="{{ url_for('login') }}" method="post">
-                <label for="hospital">Select Hospital:</label>
-                <select id="hospital" name="hospital" required>
-                    <option value="" disabled selected>Select your hospital</option>
-                    <option value="hospital1">Hospital 1</option>
-                    <option value="hospital2">Hospital 2</option>
-                </select>
-    
-                <label for="email">Email ID:</label>
-                <input type="email" id="email" name="email" required>
-    
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-    
-                <div class="button-group">
-                    <button type="submit" class="signin-btn">Sign In</button>
-                    <button type="button" class="register-btn">Register</button>
-                </div>
-            </form>
+
+    <!-- Quick Seed Account Selection Info -->
+    <div
+        style="background:#f1f5f9; padding:12px 16px; border-radius:8px; font-size:12px; margin-bottom:20px; line-height:1.6;">
+        <strong>Demo Accounts (Pre-seeded):</strong><br>
+        • Patient: <code>patient@medq.com</code> / <code>patient123</code><br>
+        • Doctor: <code>doctor@medq.com</code> / <code>doctor123</code><br>
+        • Hospital Admin: <code>hospital@medq.com</code> / <code>hospital123</code><br>
+        • System Admin: <code>admin@medq.com</code> / <code>admin123</code>
+    </div>
+
+    <form action="{{ url_for('login') }}" method="POST">
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" name="email" id="email" class="form-control" placeholder="patient@medq.com" required>
         </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-medq btn-primary" style="width:100%; margin-top:10px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px; font-size:14px; color:var(--text-muted);">
+        Don't have an account? <a href="{{ url_for('register') }}"
+            style="color:var(--primary); font-weight:600;">Register here</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

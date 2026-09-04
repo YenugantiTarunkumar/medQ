@@ -175,6 +175,12 @@ def patient_hospitals():
     hospitals = hospitals_query.all()
     return render_template('patient/hospitals.html', hospitals=hospitals)
 
+@app.route('/patient/hospital/<int:hospital_id>')
+@role_required('PATIENT')
+def patient_hospital_detail(hospital_id):
+    hospital = Hospital.query.get_or_404(hospital_id)
+    return render_template('patient/hospital_detail.html', hospital=hospital)
+
 @app.route('/patient/profile', methods=['GET', 'POST'])
 @role_required('PATIENT')
 def patient_profile():
